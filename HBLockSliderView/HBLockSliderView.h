@@ -21,6 +21,12 @@
 @property (nonatomic,strong) UIImage *thumbImage;
 @property (nonatomic,strong) UIImage *finishImage;
 @property (nonatomic, assign) BOOL thumbHidden;
+
+@property (nonatomic, strong) UILabel *nextLabel;
+@property (nonatomic, strong) UILabel *label;
+@property (nonatomic, strong) UIView *anmiView;
+
+
 /**
  *  拖动后是否返回
  */

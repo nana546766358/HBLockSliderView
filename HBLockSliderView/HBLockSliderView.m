@@ -1,3 +1,4 @@
+
 //
 //  HBLockSliderView.m
 //  MySliderDemo
@@ -11,15 +12,16 @@
 #define kCornerRadius 5.0  //默认圆角为5
 #define kBorderWidth 0.2 //默认边框为2
 #define kAnimationSpeed 0.5 //默认动画移速
-#define kForegroundColor [UIColor orangeColor] //默认滑过颜色
-#define kBackgroundColor [UIColor darkGrayColor] //默认未滑过颜色
-#define kThumbColor [UIColor lightGrayColor] //默认Thumb颜色
-#define kBorderColor [UIColor blackColor] //默认边框颜色
+#define kForegroundColor [UIColor clearColor] //默认滑过颜色
+#define kBackgroundColor [UIColor clearColor] //默认未滑过颜色
+#define kThumbColor [UIColor clearColor] //默认Thumb颜色
+#define kBorderColor [UIColor clearColor] //默认边框颜色
 #define kThumbW 15 //默认的thumb的宽度
 
 #import "HBLockSliderView.h"
+#import "UIImage+GIF.h"
 @interface HBLockSliderView () {
-    UILabel *_label;
+    // UILabel *_label;
     UIImageView *_thumbImageView;
     UIView *_foregroundView;
     UIView *_touchView;
@@ -49,19 +51,27 @@
     //    UIImageView *backgroundV = [[UIImageView alloc] initWithFrame:self.bounds];
     //    backgroundV.image = [self drawRoundedCornerImageWithSize:backgroundV.frame.size radius:kCornerRadius borderWidth:kBorderWidth backgroundColor:kBackgroundColor borderColor:kBorderColor];
     //    [self insertSubview:backgroundV atIndex:0];
+    
+    _anmiView = [[UILabel alloc] init];
+    [self addSubview:_anmiView];
+    
+    
     _label = [[UILabel alloc] initWithFrame:self.bounds];
     _label.textAlignment = NSTextAlignmentCenter;
-    _label.font = [UIFont systemFontOfSize:20];
+    _label.font = [UIFont systemFontOfSize:18];
     _foregroundView = [[UIView alloc] init];
     [self addSubview:_foregroundView];
+    
+    UIView *sliderView = [[UIView alloc] init];
+    sliderView.frame = CGRectMake(0, 0, kSliderW, 60);
+    sliderView.backgroundColor = [UIColor clearColor];
+    [self addSubview:sliderView];
+    
     _thumbImageView = [[UIImageView alloc] initWithFrame:CGRectZero];
     _thumbImageView.layer.cornerRadius = kCornerRadius;
     _thumbImageView.layer.masksToBounds = YES;
-    _thumbImageView.userInteractionEnabled = YES;
     [self addSubview:_thumbImageView];
-    self.layer.cornerRadius = kCornerRadius;
-    self.layer.masksToBounds = YES;
-    self.layer.borderWidth = kBorderWidth;
+
     [self setSliderValue:0.0];
     //默认配置
     self.thumbBack = YES;
@@ -71,6 +81,19 @@
     [self.layer setBorderColor:kBorderColor.CGColor];
     _touchView = _thumbImageView;
     
+    _touchView = sliderView;
+    
+    _nextLabel = [[UILabel alloc] init];
+    _nextLabel.frame = _label.frame;
+    _nextLabel.font = [UIFont systemFontOfSize:18.0f];
+    _nextLabel.frame = CGRectMake((kSliderW-20)/2-15, 15, (kSliderW-20)/2, 30);
+    _nextLabel.textAlignment = NSTextAlignmentLeft;
+    _nextLabel.textColor = [UIColor clearColor];
+    [self addSubview:_nextLabel];
+    
+    _thumbImageView.userInteractionEnabled = YES;
+    _touchView.userInteractionEnabled = YES;
+    _foregroundView.userInteractionEnabled = YES;
 }
 
 #pragma mark - Public
@@ -95,7 +118,7 @@
     if (value > 1) {
         value = 1;
     }
-    if (value <= 0) {
+    if (value < 1) {
         value = 0;
     }
     CGPoint point = CGPointMake(value * kSliderW, 0);
@@ -114,8 +137,9 @@
 }
 
 - (void)setColorForBackgroud:(UIColor *)backgroud foreground:(UIColor *)foreground thumb:(UIColor *)thumb border:(UIColor *)border textColor:(UIColor *)textColor{
+    //self.backgroundColor = backgroud;
+    // _foregroundView.backgroundColor = foreground;
     self.backgroundColor = backgroud;
-    _foregroundView.backgroundColor = foreground;
     _thumbImageView.backgroundColor = thumb;
     [self.layer setBorderColor:border.CGColor];
     _label.textColor = textColor;
@@ -124,14 +148,23 @@
 - (void)setThumbImage:(UIImage *)thumbImage{
     _thumbImage = thumbImage;
     _thumbImageView.image = thumbImage ;
-    //    _thumbImageView.image = [self imageAddCornerWithImage:thumbImage Radius:kCornerRadius andSize:thumbImage.size];
     [_thumbImageView sizeToFit];
     [self setSliderValue:0.0];
 }
 
 - (void)setThumbBeginImage:(UIImage *)beginImage finishImage:(UIImage *)finishImage{
-    self.thumbImage = beginImage;
-    self.finishImage = finishImage;
+//    self.thumbImage = beginImage;
+//    self.finishImage = finishImage;
+    
+    //469 196
+    UIImage *statusImg = [UIImage sd_animatedGIFNamed:@"ly_slider"];
+    
+   // UIImageView *statusImgView = [LYControl setImageView:@"xxx"];
+    //statusImgView.image = statusImg;
+    //statusImgView.frame = CGRectMake(105, 30, 50, 50);
+   // [statusImageView addSubview:statusImgView];
+    self.thumbImage = statusImg;
+    self.finishImage = statusImg;
 }
 
 - (void)removeRoundCorners:(BOOL)corners border:(BOOL)border{
@@ -170,18 +203,23 @@
     }
     self.value = p.x  / kSliderW;
     
+    if (point.x > kSliderW-20) {
+        _foregroundView.frame = CGRectMake(0, 0, kSliderW-20, kSliderH);
+    } else {
+        _foregroundView.frame = CGRectMake(0, 0, point.x, kSliderH);
+    }
     
-    _foregroundView.frame = CGRectMake(0, 0, point.x, kSliderH);
+    if (point.x == kSliderW-30) {
+       // [self.delegate sliderHalfValue];
+    }
     
-    
+    //修改滑动图片位置/大小
     if (_foregroundView.frame.size.width <= 0) {
-        _thumbImageView.frame = CGRectMake(0, kBorderWidth, thunmbW, _foregroundView.frame.size.height- kBorderWidth);
-        
+        _thumbImageView.frame = CGRectMake(20, 20, 20, 20);
     }else if (_foregroundView.frame.size.width >= kSliderW) {
-        _thumbImageView.frame = CGRectMake(_foregroundView.frame.size.width - thunmbW, kBorderWidth, thunmbW, _foregroundView.frame.size.height - 2 * kBorderWidth );
-        
+        _thumbImageView.frame = CGRectMake(_foregroundView.frame.size.width-20, 20, 20, 20);
     }else{
-        _thumbImageView.frame = CGRectMake(_foregroundView.frame.size.width-thunmbW/2, kBorderWidth, thunmbW, _foregroundView.frame.size.height-kBorderWidth*2);
+        _thumbImageView.frame = CGRectMake(_foregroundView.frame.size.width-20/2, 20, 20, 20);
     }
     
 }
@@ -222,34 +260,34 @@
     return newImage;
 }
 #pragma mark - Touch
-- (void)touchesBegan:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event{
-    UITouch *touch = [touches anyObject];
-    if ( _touchView == _thumbImageView) {
-        return;
-    }
-    CGPoint point = [touch locationInView:self];
-    NSLog(@"%f",point.x);
-    [self fillForeGroundViewWithPoint:point];
-}
+//- (void)touchesBegan:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event{
+//    UITouch *touch = [touches anyObject];
+//    if ( _touchView == _thumbImageView) {
+//        return;
+//    }
+//    CGPoint point = [touch locationInView:self];
+//    NSLog(@"point.x == %f",point.x);
+//    [self fillForeGroundViewWithPoint:point];
+//}
 
 - (void)touchesMoved:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event{
     UITouch *touch = [touches anyObject];
-    if (touch.view != _touchView) {
-        return;
-    }
+//    if (touch.view != _touchView || touch.view != _thumbImageView) {
+//        return;
+//    }
+    
     CGPoint point = [touch locationInView:self];
     [self fillForeGroundViewWithPoint:point];
     if ([self.delegate respondsToSelector:@selector(sliderValueChanging:)] ) {
         [self.delegate sliderValueChanging:self];
     }
-    
 }
 
 - (void)touchesEnded:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event{
     UITouch *touch = [touches anyObject];
-    if (touch.view != _touchView) {
-        return;
-    }
+//    if (touch.view != _touchView) {
+//        return;
+//    }
     CGPoint __block point = [touch locationInView:self];
     if ([self.delegate respondsToSelector:@selector(sliderEndValueChanged:)]) {
         [self.delegate sliderEndValueChanged:self];
@@ -260,10 +298,11 @@
         [UIView animateWithDuration:0.5 animations:^{
             point.x = 0;
             [weakSelf fillForeGroundViewWithPoint:point];
-            
+            if ([self.delegate respondsToSelector:@selector(sliderEndValueChanged:)]) {
+                //   [self.delegate sliderEndValueChanged:self];
+            }
         }];
     }
-    
 }
 
 @end
